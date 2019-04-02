@@ -14,27 +14,30 @@ void buffers(int sockfd)
 {
 	int		n;
 	socklen_t	optlen;
-  
+
 	/* Allocate the read and write buffers. */
-  
+
 	if (rbuf == NULL) {
 		if ( (rbuf = malloc(readlen)) == NULL)
 			err_sys("malloc error for read buffer");
 	}
-  
+
 	if (wbuf == NULL) {
 		if ( (wbuf = malloc(writelen)) == NULL)
 			err_sys("malloc error for write buffer");
 	}
-  
+
 	/* Set the socket send and receive buffer sizes (if specified).
 	   The receive buffer size is tied to TCP's advertised window. */
-  
+
+	int optval;
+
 	if (rcvbuflen) {
-		if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &rcvbuflen,
+		optval = rcvbuflen / 2;
+		if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &optval,
 			       sizeof(rcvbuflen)) < 0)
 			err_sys("SO_RCVBUF setsockopt error");
-      
+
 		optlen = sizeof(n);
 		if (getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &n, &optlen) < 0)
 			err_sys("SO_RCVBUF getsockopt error");
@@ -45,10 +48,11 @@ void buffers(int sockfd)
 	}
 
 	if (sndbuflen) {
-		if (setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &sndbuflen,
+		optval = sndbuflen / 2;
+		if (setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &optval,
 			       sizeof(sndbuflen)) < 0)
 			err_sys("SO_SNDBUF setsockopt error");
-      
+
 		optlen = sizeof(n);
 		if (getsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &n, &optlen) < 0)
 			err_sys("SO_SNDBUF getsockopt error");
@@ -58,3 +62,4 @@ void buffers(int sockfd)
 			fprintf(stderr, "SO_SNDBUF = %d\n", n);
 	}
 }
+
